@@ -1,0 +1,82 @@
+(function(win, doc) {
+
+    win.onload = init;
+
+    var results = [];
+
+    function init() {
+    	var startButton = doc.getElementById("startButton");
+    	startButton.onclick = sendDataToWorkers;
+    }
+
+    // Handle messages received from the Web Worker
+    function handleReceipt(event) {
+        var itemsList = doc.getElementById("items");
+        var item = doc.createElement("li");
+        var result = JSON.stringify(event.data);
+        results[event.data.index] = result;
+        localStorage.setItem("part3", results);
+        item.innerHTML = result;
+        items.appendChild(item);
+
+        displayStorage();
+    }
+
+    // send messages to the Web Workers
+    function sendDataToWorkers(e) {
+
+        results = [];
+        localStorage.setItem("part3", results);
+
+        doc.getElementById("items").innerHTML = '';
+        doc.getElementById("storageItems").innerHTML = '';
+
+    	let range = parseInt(doc.getElementById("range").value) || 100;
+        let numWorkers = parseInt(doc.getElementById("numWorkers").value) || 5;
+        let eachOne = Math.round(range / numWorkers);
+
+        for (let i = 0; i < numWorkers; i++) {
+            let myWorker = new Worker("computeWorker.js");
+            myWorker.onmessage = handleReceipt;
+            myWorker.postMessage({'index': i, 'start': (i*eachOne + 1) , 'end': (i+1)*eachOne});
+        }
+
+    }
+
+    // display new storage events
+    function displayStorage() {
+
+        let value = localStorage.getItem("part3");
+        var output = doc.getElementById("storageItems");
+        // create a line item and add to the end of the list
+        var item = doc.createElement("li");
+        item.innerHTML = value;
+        output.appendChild(item);
+    }
+
+})(window, document);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
